@@ -24,6 +24,17 @@ const runtimeCtx = {
 };
 
 describe('settings search', () => {
+  test('finds the personal background controls on supported clients only', () => {
+    for (const context of [runtimeCtx, { ...runtimeCtx, isDesktop: true }, { ...runtimeCtx, isMobile: true }]) {
+      const results = buildSettingsSearchResults({ query: 'wallpaper', runtimeCtx: context, t, getPageTitle: (page) => page });
+      expect(results.filter((result) => result.id.startsWith('appearance.background-')).map((result) => result.id)).toEqual([
+        'appearance.background-image',
+      ]);
+    }
+    const results = buildSettingsSearchResults({ query: 'wallpaper', runtimeCtx: { ...runtimeCtx, isVSCode: true }, t, getPageTitle: (page) => page });
+    expect(results.some((result) => result.id.startsWith('appearance.background-'))).toBe(false);
+  });
+
   test('finds double-paste on every shared Settings surface', () => {
     for (const query of ['double paste', 'ctrl v', 'cmd v']) {
       for (const context of [runtimeCtx, { ...runtimeCtx, isDesktop: true }, { ...runtimeCtx, isVSCode: true }, { ...runtimeCtx, isMobile: true }]) {

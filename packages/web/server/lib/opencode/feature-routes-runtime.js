@@ -32,6 +32,7 @@ import { registerRoutingPromptRewrite, registerRoutingRoutes } from '../routing/
 import { registerConfigEntityRoutes } from './config-entity-routes.js';
 import { registerSettingsUtilityRoutes } from './core-routes.js';
 import { registerProjectIconRoutes } from './project-icon-routes.js';
+import { registerChatBackgroundRoutes } from '../chat-background/routes.js';
 import { registerScheduledTaskRoutes } from '../scheduled-tasks/routes.js';
 import { createTrackedItemsService } from '../tracked-items/service.js';
 import { createProviderReadCache } from '../provider-read-cache/index.js';
@@ -269,6 +270,7 @@ export const createFeatureRoutesRuntime = (dependencies) => {
       clientReloadDelayMs,
     });
 
+    registerChatBackgroundRoutes(app, { openchamberDataDir });
     registerPermissionAutoAcceptRoutes(app, permissionAutoAcceptRuntime);
     registerMessageQueueRoutes(app, messageQueueRuntime);
     registerRoutingRoutes(app, routingRuntime);

@@ -64,7 +64,7 @@ import { SessionErrorNotice } from '@/components/chat/SessionErrorNotice';
 import ScrollToBottomButton from './components/ScrollToBottomButton';
 import { PromptNavigatorRail } from './components/PromptNavigatorRail';
 import { useAuthSessionStore } from '@/lib/runtime-auth-expiry';
-import { useScrollShadow } from '@/components/ui/useScrollShadow';
+import { useScrollShadow, type ScrollShadowVisibility } from '@/components/ui/useScrollShadow';
 import { useChatTimelineScroll, type LinkedMessageState, type TimelineListHandle } from '@/hooks/useChatTimelineScroll';
 import { useChatTimelineController } from './hooks/useChatTimelineController';
 import { TimelineDialog } from './TimelineDialog';
@@ -700,15 +700,15 @@ const HydrationSkeleton: React.FC<{ waiting: boolean }> = ({ waiting }) => {
                             <div className="space-y-1.5">
                                 {item.toolRows.map((row) => (
                                     <div key={`${item.id}-${row.id}`} className="flex items-center gap-2">
-                                        <Skeleton className="h-3.5 w-3.5 shrink-0 rounded-full" />
-                                        <Skeleton className={cn('h-4 rounded-md', row.titleWidth)} />
-                                        <Skeleton className={cn('h-4 rounded-md', row.detailWidth)} />
+                                        <Skeleton className="h-3.5 w-3.5 shrink-0 rounded-full bg-foreground/10" />
+                                        <Skeleton className={cn('h-4 rounded-md bg-foreground/10', row.titleWidth)} />
+                                        <Skeleton className={cn('h-4 rounded-md bg-foreground/10', row.detailWidth)} />
                                     </div>
                                 ))}
                             </div>
                             <div className="space-y-1.5 pt-1">
                                 {item.textWidths.map((width, index) => (
-                                    <Skeleton key={`${item.id}-text-${index}`} className={cn('h-4 rounded-md', width)} />
+                                    <Skeleton key={`${item.id}-text-${index}`} className={cn('h-4 rounded-md bg-foreground/10', width)} />
                                 ))}
                             </div>
                         </div>
@@ -1668,11 +1668,23 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     // The list owns the scroll element, so the shadows and the load-older
     // trigger bind to its node rather than to a wrapper we render.
     const scrollNodeRef = React.useMemo(() => ({ current: scrollNode }), [scrollNode]);
+    const onScrollShadowVisibilityChange = React.useCallback((visibility: ScrollShadowVisibility) => {
+        const root = columnRootRef.current;
+        if (!root) return;
+        const hasActiveChat = active && !pinned && Boolean(currentSessionId) && sessionMessages.length > 0;
+        root.toggleAttribute('data-chat-top-shadow', hasActiveChat && (visibility === 'top' || visibility === 'both'));
+    }, [active, currentSessionId, pinned, sessionMessages.length]);
+    React.useLayoutEffect(() => {
+        if (pinned || !active || !currentSessionId || sessionMessages.length === 0 || !scrollNode) {
+            columnRootRef.current?.removeAttribute('data-chat-top-shadow');
+        }
+    }, [active, currentSessionId, pinned, scrollNode, sessionMessages.length]);
     useScrollShadow(scrollNodeRef, {
         observeMutations: false,
         hideTopShadow: isMobile && stickyUserHeader,
         // The glass composer is the visible end of the transcript.
         hideBottomShadow: floatingComposer,
+        onVisibilityChange: onScrollShadowVisibilityChange,
     });
 
     React.useLayoutEffect(() => {
@@ -1733,10 +1745,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 		// The auto-open effect runs on the next tick. Use a neutral background
 		// until then instead of flashing the standard empty state.
 		if (autoOpenDraft && !initError) {
-			return <div className="flex h-full flex-col bg-background" />;
+			return <div className="oc-chat-background-root flex h-full flex-col bg-background" />;
 		}
 		return (
-			<div className="flex flex-col h-full bg-background">
+			<div className="oc-chat-background-root flex flex-col h-full bg-background">
 				<ChatEmptyState />
 			</div>
 		);
@@ -1858,7 +1870,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 			data-chat-column={pinned ? 'pinned' : 'main'}
 			data-chat-session-id={pinned ? currentSessionId ?? undefined : undefined}
 			data-chat-working={pinned && sessionIsWorking ? 'true' : undefined}
-			className="flex h-full min-h-0 bg-background"
+			className="oc-chat-background-root flex h-full min-h-0 bg-background"
 		>
 		<ChatColumnSessionContext.Provider value={chatColumnSession}>
 		<ChatColumnActionsContext.Provider value={columnActions}>
@@ -1904,6 +1916,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 ref={attachComposerSlot}
                 // The mobile pill morph pins a floating slot for its tween.
                 data-composer-slot={floatingComposer ? 'floating' : 'flow'}
+                data-background-opaque={isDesktopExpandedInput ? '' : undefined}
                 className={cn(
                     'z-10 flex min-h-0',
                     floatingComposer

@@ -95,6 +95,14 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     isAvailable: (ctx) => !ctx.isVSCode,
   },
   {
+    id: 'appearance.background-image',
+    page: 'appearance',
+    titleKey: 'settings.chatBackground.title',
+    descriptionKey: 'settings.chatBackground.description',
+    keywords: ['background', 'wallpaper', 'image', 'photo', 'upload'],
+    isAvailable: (ctx) => !ctx.isVSCode,
+  },
+  {
     id: 'appearance.dock-badge',
     page: 'appearance',
     titleKey: 'settings.openchamber.visual.field.dockBadge',

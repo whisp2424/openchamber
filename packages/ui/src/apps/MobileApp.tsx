@@ -67,6 +67,8 @@ import { closeTopmostBackLayer } from '@/lib/mobileBackLayers';
 import { useUpdateStore } from '@/stores/useUpdateStore';
 import { useSessionUIStore } from '@/sync/session-ui-store';
 import { SyncProvider } from '@/sync/sync-context';
+import { useChatBackgroundImage } from '@/lib/chat-background/useChatBackground';
+import { workspaceBackgroundStyle } from '@/lib/chat-background/workspaceBackgroundStyle';
 
 import { SyncAppEffects } from './AppEffects';
 import { BusyDots } from '@/components/ui/busy-dots';
@@ -138,6 +140,7 @@ const NATIVE_RESUME_SYNC_EVENT_THROTTLE_MS = 1_000;
 type MobileSurface = 'archive' | 'board' | 'overview' | 'instances' | 'scheduled' | 'settings' | 'update' | 'usage';
 
 const MobileShell: React.FC<{ onActiveConnectionDeleted: () => void }> = ({ onActiveConnectionDeleted }) => {
+  const workspaceBackgroundImage = useChatBackgroundImage();
   const { t, direction } = useI18n();
   // The mobile root does not mount MainLayout, so it owns its own terminal
   // keepalive: without it, background PTYs (running project actions included)
@@ -510,7 +513,12 @@ const MobileShell: React.FC<{ onActiveConnectionDeleted: () => void }> = ({ onAc
   return (
     <DedicatedMobileAppProvider actions={mobileActions}>
       <div
-        className="oc-mobile-app-shell main-content-safe-area flex h-[100dvh] flex-row bg-background text-foreground"
+        className={cn(
+          'main-content-safe-area flex h-[100dvh] flex-row text-foreground',
+          workspaceBackgroundImage ? 'oc-mobile-app-shell oc-workspace-background' : 'oc-mobile-app-shell bg-background',
+        )}
+        data-workspace-background-active={workspaceBackgroundImage ? '' : undefined}
+        style={workspaceBackgroundStyle(workspaceBackgroundImage)}
         data-page-scroll-lock="true"
       >
         {/* iPad: persistent full-height sessions sidebar; the chat column and
@@ -576,7 +584,14 @@ const MobileShell: React.FC<{ onActiveConnectionDeleted: () => void }> = ({ onAc
           </aside>
         ) : null}
 
-        <div className="flex h-full min-w-0 flex-1 flex-col" data-page-scroll-lock="true">
+        <div
+          className={cn(
+            'relative flex h-full min-w-0 flex-1 flex-col',
+            !workspaceBackgroundImage && 'bg-background',
+          )}
+          data-workspace-background-transparent={workspaceBackgroundImage ? '' : undefined}
+          data-page-scroll-lock="true"
+        >
           <MobileHeader
             onOpenSessions={() => (isTabletLayout ? toggleSidebar() : setSessionsSheetOpen(true))}
             onOpenWorkspace={openWorkspace}
@@ -610,9 +625,11 @@ const MobileShell: React.FC<{ onActiveConnectionDeleted: () => void }> = ({ onAc
         <aside
           ref={rightResize.asideRef}
           className={cn(
-            'relative flex h-full shrink-0 flex-col overflow-hidden border-s border-border/70 bg-background will-change-[width] motion-reduce:transition-none',
+            'relative flex h-full shrink-0 flex-col overflow-hidden border-s border-border/70 will-change-[width] motion-reduce:transition-none',
+            !workspaceBackgroundImage && 'bg-background',
             !workspacePanelWidth && 'border-s-0',
           )}
+          data-workspace-background-transparent={workspaceBackgroundImage ? '' : undefined}
           style={{
             width: workspacePanelWidth,
             minWidth: workspacePanelWidth,

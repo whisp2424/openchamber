@@ -1,5 +1,6 @@
 import type { I18nKey } from './en';
 import { settingsDict } from './uk.settings';
+import { chatBackgroundI18n } from './chat-background.i18n';
 import { linearIssuePickerI18n } from './linear-issue-picker.i18n';
 import { referencePickerI18n } from './reference-picker.i18n';
 import { sessionMenuHintsI18n } from './session-menu-hints.i18n';
@@ -80,6 +81,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.liveActivity.usedSubagents': 'Залучено сабагентів: {count}',
   'sessions.sidebar.projectAction.active': 'Виконується дія проєкту',
   ...settingsDict,
+  ...chatBackgroundI18n.uk,
   'gitView.context.configure': 'Налаштувати репозиторій',
   'gitView.context.description': 'Remote, до яких ідентичність репозиторію не дістає, і доступ для сабмодулів і Git LFS. Ідентичності — в налаштуваннях Git.',
   'gitView.context.needsAttention': 'Потребує уваги',

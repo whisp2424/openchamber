@@ -1,4 +1,5 @@
 import { settingsDict } from './tr.settings';
+import { chatBackgroundI18n } from './chat-background.i18n';
 import { linearIssuePickerI18n } from './linear-issue-picker.i18n';
 import { referencePickerI18n } from './reference-picker.i18n';
 import { sessionMenuHintsI18n } from './session-menu-hints.i18n';
@@ -79,6 +80,7 @@ export const dict = {
   'chat.liveActivity.usedSubagents': '{count} alt agent kullanıldı',
   'sessions.sidebar.projectAction.active': 'Proje eylemi çalışıyor',
   ...settingsDict,
+  ...chatBackgroundI18n.tr,
   ...linearIssuePickerI18n.tr,
   ...referencePickerI18n.tr,
   ...sessionMenuHintsI18n.tr,

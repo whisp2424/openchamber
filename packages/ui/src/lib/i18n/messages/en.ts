@@ -1,4 +1,5 @@
 import { settingsDict } from './en.settings';
+import { chatBackgroundI18n } from './chat-background.i18n';
 import { linearIssuePickerI18n } from './linear-issue-picker.i18n';
 import { referencePickerI18n } from './reference-picker.i18n';
 import { sessionMenuHintsI18n } from './session-menu-hints.i18n';
@@ -79,6 +80,7 @@ export const dict = {
   'chat.liveActivity.usedSubagents': 'Used {count} subagents',
   'sessions.sidebar.projectAction.active': 'Project action active',
   ...settingsDict,
+  ...chatBackgroundI18n.en,
   'gitView.operation.title': 'Git operation',
   'gitView.operation.recovery.storage': 'OpenChamber can\'t save the state of Git transfers here. Allow site storage and reload; pushing and pulling are paused until then.',
   'gitView.operation.recovery.capacity': 'Too many unfinished Git transfers are saved. Check the ones below before starting another.',

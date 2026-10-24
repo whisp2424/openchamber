@@ -423,7 +423,8 @@ export const ContextPanelRail: React.FC = () => {
     <nav
       ref={railRef}
       aria-label={t('contextRail.aria.rail')}
-      className="flex h-full w-11 flex-shrink-0 flex-col items-center gap-2 bg-background py-2"
+      className="flex h-full w-11 flex-shrink-0 flex-col items-center gap-2 bg-transparent py-2"
+      data-context-panel-rail=""
     >
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragCancel={handleDragCancel} onDragEnd={handleDragEnd}>
         <SortableContext items={surfaces.map((surface) => surface.id)} strategy={verticalListSortingStrategy}>

@@ -1,0 +1,119 @@
+/* Match Open WebUI's fixed theme veil over the image. */
+.oc-workspace-background {
+  position: relative;
+  isolation: isolate;
+  --oc-workspace-background-fade: 85%;
+  --oc-workspace-scroll-shadow-size: 48px;
+}
+
+.dark .oc-workspace-background {
+  --oc-workspace-background-fade: 90%;
+}
+
+.oc-workspace-background [data-workspace-background-transparent],
+.oc-workspace-background .oc-chat-background-root,
+.oc-workspace-background .oc-chat-background-root [data-composer-bound],
+.oc-workspace-background .oc-chat-background-root [data-chat-hydration-skeleton] > div,
+.oc-workspace-background .oc-chat-background-root [data-composer-slot]:not([data-background-opaque]) {
+  background-color: transparent;
+}
+
+.oc-workspace-background [data-context-panel] {
+  background-color: transparent;
+}
+
+.oc-workspace-background [data-context-panel-rail] {
+  position: relative;
+  isolation: isolate;
+  background-color: transparent;
+}
+
+.oc-workspace-background [data-context-panel][data-context-zone="right"]::before,
+.oc-workspace-background [data-context-panel-rail]::before {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: -1;
+  height: var(--oc-workspace-scroll-shadow-size);
+  background-image: linear-gradient(to bottom, var(--background), transparent);
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.oc-workspace-background .header-safe-area,
+.oc-workspace-background .oc-mobile-header {
+  position: relative;
+  isolation: isolate;
+  background-color: transparent;
+}
+
+.main-content-safe-area:not(:has([data-workspace-background-active])) .header-safe-area {
+  background-color: var(--background);
+}
+
+.oc-workspace-background .header-safe-area::before,
+.oc-workspace-background .oc-mobile-header::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--background);
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.oc-workspace-background .chat-scroll-fade--top {
+  --scroll-shadow-size: var(--oc-workspace-scroll-shadow-size);
+  display: block;
+  height: var(--oc-workspace-scroll-shadow-size);
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.oc-workspace-background:has([data-chat-column="main"][data-chat-top-shadow]) .header-safe-area::before,
+.oc-workspace-background:has([data-chat-column="main"][data-chat-top-shadow]) .oc-mobile-header::before,
+.oc-workspace-background:has([data-chat-column="main"][data-chat-top-shadow]) .chat-scroll-fade--top,
+.oc-workspace-background:has([data-chat-column="main"][data-chat-top-shadow]) [data-context-panel][data-context-zone="right"]::before,
+.oc-workspace-background:has([data-chat-column="main"][data-chat-top-shadow]) [data-context-panel-rail]::before {
+  opacity: 1;
+}
+
+.main-content-safe-area[data-workspace-background-configured]:has([data-workspace-header-pending]) .header-safe-area {
+  visibility: hidden;
+}
+
+.oc-background-preview-scrim {
+  position: absolute;
+  inset: 0;
+  background-color: rgb(0 0 0 / 28%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+.oc-background-preview:hover .oc-background-preview-scrim,
+.oc-background-preview:focus-visible .oc-background-preview-scrim {
+  opacity: 1;
+}
+
+.oc-workspace-background .oc-mobile-header {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-workspace-background .header-safe-area::before,
+  .oc-workspace-background .oc-mobile-header::before,
+  .oc-workspace-background .chat-scroll-fade--top,
+  .oc-workspace-background [data-context-panel][data-context-zone="right"]::before,
+  .oc-workspace-background [data-context-panel-rail]::before {
+    transition: none;
+  }
+
+  .oc-background-preview-scrim {
+    transition: none;
+  }
+}

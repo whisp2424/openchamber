@@ -1353,7 +1353,7 @@ export const Header: React.FC = () => {
 
   // No divider under the header: it, the chat and the window read as one
   // surface, and the context panel separates itself as a framed card.
-  const headerClassName = 'header-safe-area relative z-10 bg-background';
+  const headerClassName = 'header-safe-area relative z-10';
 
   return (
     <>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ThemeImportButton } from './ThemeImportButton';
 import { ThemePicker } from './ThemePicker';
+import { BackgroundSettings } from '@/lib/chat-background/BackgroundSettings';
 
 import { useThemeSystem } from '@/contexts/useThemeSystem';
 import type { ThemeMode } from '@/types/theme';
@@ -546,6 +547,8 @@ export const OpenChamberVisualSettings: React.FC<OpenChamberVisualSettingsProps>
                                 {scrollbarSetting && <SettingsInset>{scrollbarSetting}</SettingsInset>}
                             </SettingsSection>
                         )}
+
+                        {hasThemeSettings && <BackgroundSettings />}
 
                         {showWindowControlsPositionSetting && (
                             <SettingsSection

@@ -33,6 +33,8 @@ import { cn } from '@/lib/utils';
 import { useOnDemandComponent } from '@/hooks/useOnDemandComponent';
 import { useSessionListSync } from '@/components/session/sidebar/list/useSessionListSync';
 import { setChatCovered } from './rightSlot';
+import { useChatBackgroundImage } from '@/lib/chat-background/useChatBackground';
+import { workspaceBackgroundStyle } from '@/lib/chat-background/workspaceBackgroundStyle';
 
 import { ChatView } from '@/components/views/ChatView';
 import { DiagnosticDialogAvailableContext } from '@/lib/diagnostics/dialog-availability';
@@ -66,9 +68,12 @@ const OnDemand: React.FC<{
     load: () => Promise<React.ComponentType>;
     /** Closes the surface when its chunk fails to load, so the next open tries again. */
     onFailure: () => void;
-}> = ({ needed, load, onFailure }) => {
+    hideHeaderWhileLoading?: boolean;
+}> = ({ needed, load, onFailure, hideHeaderWhileLoading = false }) => {
     const Component = useOnDemandComponent(needed, load, onFailure);
-    return Component ? <Component /> : null;
+    if (Component) return <Component />;
+    if (!needed || !hideHeaderWhileLoading) return null;
+    return <span aria-hidden="true" className="hidden" data-workspace-header-pending="" />;
 };
 
 /**
@@ -101,6 +106,7 @@ LeftSidebar.displayName = 'LeftSidebar';
  * crossing the threshold reloads into it (see watchHostedSurfaceViewport).
  */
 export const MainLayout: React.FC = () => {
+    const workspaceBackgroundImage = useChatBackgroundImage();
     useSessionListSync({ isVSCode: false });
     useTerminalSessionKeepalive();
     // The grant dialog of isolated spaces; the main layout is never VS Code's (decision 16).
@@ -142,6 +148,7 @@ export const MainLayout: React.FC = () => {
     // fully hidden (not just covered) so none of its floating chrome bleeds
     // through, and selecting a session or draft anywhere closes the surface.
     const isSurfacePageOpen = isScheduledTasksPageOpen || isArchivePageOpen || isIntegrationsCatalogOpen || isUsageStatsPageOpen || isSourceBoardOpen || isOverviewOpen || Boolean(worktreesPageProjectId) || isSpacesPageOpen || isRunOverviewOpen || Boolean(guestPage);
+    const visibleWorkspaceBackgroundImage = isSurfacePageOpen ? null : workspaceBackgroundImage;
     // The work-status card sits in the right slot, outside the hidden chat,
     // so the slot is told to hide it with the chat.
     React.useLayoutEffect(() => {
@@ -180,6 +187,7 @@ export const MainLayout: React.FC = () => {
             <div
                 data-page-scroll-lock="true"
                 className="main-content-safe-area relative flex h-[100dvh] bg-background"
+                data-workspace-background-configured={workspaceBackgroundImage ? '' : undefined}
             >
                 <OnDemand needed={isCommandPaletteOpen} load={loadCommandPalette} onFailure={() => useUIStore.getState().setCommandPaletteOpen(false)} />
                 <OnDemand needed={isHelpDialogOpen} load={loadHelpDialog} onFailure={() => useUIStore.getState().setHelpDialogOpen(false)} />
@@ -203,10 +211,26 @@ export const MainLayout: React.FC = () => {
                 {/* Full-height Sidebar beside [Header above (chat | RightSidebar)] */}
                 <div className="flex flex-1 overflow-hidden" data-page-scroll-lock="true">
                     <LeftSidebar isMobile={isMobile} />
-                    <div className="relative flex flex-1 min-w-0 flex-col overflow-hidden bg-background" data-page-scroll-lock="true">
+                    <div
+                        className={cn(
+                            'relative flex flex-1 min-w-0 flex-col overflow-hidden',
+                            visibleWorkspaceBackgroundImage ? 'oc-workspace-background' : 'bg-background',
+                        )}
+                        data-workspace-background-active={visibleWorkspaceBackgroundImage ? '' : undefined}
+                        style={workspaceBackgroundStyle(visibleWorkspaceBackgroundImage)}
+                        data-page-scroll-lock="true"
+                    >
                         <Header />
-                        <div className="relative flex flex-1 min-h-0 overflow-hidden bg-background" data-page-scroll-lock="true">
-                            <div className="relative flex flex-1 min-w-0 flex-col overflow-hidden bg-background" data-page-scroll-lock="true">
+                        <div
+                            className={cn('relative flex flex-1 min-h-0 overflow-hidden', !visibleWorkspaceBackgroundImage && 'bg-background')}
+                            data-workspace-background-transparent={visibleWorkspaceBackgroundImage ? '' : undefined}
+                            data-page-scroll-lock="true"
+                        >
+                            <div
+                                className={cn('relative flex flex-1 min-w-0 flex-col overflow-hidden', !visibleWorkspaceBackgroundImage && 'bg-background')}
+                                data-workspace-background-transparent={visibleWorkspaceBackgroundImage ? '' : undefined}
+                                data-page-scroll-lock="true"
+                            >
                                 <div className="relative flex flex-1 min-h-0 overflow-hidden" data-page-scroll-lock="true" data-workspace-row="true">
                                     {/* The left zone: surfaces the user moved beside the
                                         sidebar. Empty and closed, it takes no width. */}
@@ -218,23 +242,27 @@ export const MainLayout: React.FC = () => {
                                     <div className="relative flex flex-1 min-h-0 min-w-0 overflow-hidden" data-page-scroll-lock="true" data-chat-area="true">
                                         {/* The chat column, with the bottom zone under the chat. */}
                                         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden" data-workspace-chat="true">
-                                        <main className="min-h-0 flex-1 overflow-hidden bg-background relative" data-page-scroll-lock="true">
+                                        <main
+                                            className={cn('relative min-h-0 flex-1 overflow-hidden', !visibleWorkspaceBackgroundImage && 'bg-background')}
+                                            data-workspace-background-transparent={visibleWorkspaceBackgroundImage ? '' : undefined}
+                                            data-page-scroll-lock="true"
+                                        >
                                             <div className={cn('absolute inset-0', isSurfacePageOpen && 'invisible')}>
                                                 <ErrorBoundary><ChatView active={!isSettingsDialogOpen && !isSurfacePageOpen} /></ErrorBoundary>
                                             </div>
-                                            <ErrorBoundary><OnDemand needed={isRunOverviewOpen} load={loadRunOverview} onFailure={closeMainSurfaces} /></ErrorBoundary>
-                                            <ErrorBoundary><OnDemand needed={isScheduledTasksPageOpen} load={loadScheduledTasksDialog} onFailure={closeMainSurfaces} /></ErrorBoundary>
-                                            <ErrorBoundary><OnDemand needed={isArchivePageOpen} load={loadArchiveView} onFailure={closeMainSurfaces} /></ErrorBoundary>
-                                            <ErrorBoundary><OnDemand needed={isIntegrationsCatalogOpen} load={loadIntegrationsCatalogView} onFailure={closeMainSurfaces} /></ErrorBoundary>
+                                            <ErrorBoundary><OnDemand needed={isRunOverviewOpen} load={loadRunOverview} onFailure={closeMainSurfaces} hideHeaderWhileLoading /></ErrorBoundary>
+                                            <ErrorBoundary><OnDemand needed={isScheduledTasksPageOpen} load={loadScheduledTasksDialog} onFailure={closeMainSurfaces} hideHeaderWhileLoading /></ErrorBoundary>
+                                            <ErrorBoundary><OnDemand needed={isArchivePageOpen} load={loadArchiveView} onFailure={closeMainSurfaces} hideHeaderWhileLoading /></ErrorBoundary>
+                                            <ErrorBoundary><OnDemand needed={isIntegrationsCatalogOpen} load={loadIntegrationsCatalogView} onFailure={closeMainSurfaces} hideHeaderWhileLoading /></ErrorBoundary>
                                             {isUsageStatsPageOpen && (
                                                 <div className="absolute inset-0 z-10 bg-background">
-                                                    <ErrorBoundary><OnDemand needed load={loadUsageStatsView} onFailure={closeMainSurfaces} /></ErrorBoundary>
+                                                    <ErrorBoundary><OnDemand needed load={loadUsageStatsView} onFailure={closeMainSurfaces} hideHeaderWhileLoading /></ErrorBoundary>
                                                 </div>
                                             )}
-                                            <OnDemand needed={isSourceBoardOpen} load={loadSourceBoardView} onFailure={closeMainSurfaces} />
-                                            <ErrorBoundary><OnDemand needed={isOverviewOpen} load={loadOverviewView} onFailure={closeMainSurfaces} /></ErrorBoundary>
-                                            <ErrorBoundary><OnDemand needed={Boolean(worktreesPageProjectId)} load={loadWorktreesView} onFailure={closeMainSurfaces} /></ErrorBoundary>
-                                            {isSpacesPageOpen ? <ErrorBoundary><OnDemand needed load={loadSpacesView} onFailure={closeMainSurfaces} /></ErrorBoundary> : null}
+                                            <OnDemand needed={isSourceBoardOpen} load={loadSourceBoardView} onFailure={closeMainSurfaces} hideHeaderWhileLoading />
+                                            <ErrorBoundary><OnDemand needed={isOverviewOpen} load={loadOverviewView} onFailure={closeMainSurfaces} hideHeaderWhileLoading /></ErrorBoundary>
+                                            <ErrorBoundary><OnDemand needed={Boolean(worktreesPageProjectId)} load={loadWorktreesView} onFailure={closeMainSurfaces} hideHeaderWhileLoading /></ErrorBoundary>
+                                            {isSpacesPageOpen ? <ErrorBoundary><OnDemand needed load={loadSpacesView} onFailure={closeMainSurfaces} hideHeaderWhileLoading /></ErrorBoundary> : null}
                                             {guestPage && <div className="absolute inset-0 z-10 bg-background">
                                                 <ErrorBoundary><PluginPane mode={`plugin:${guestPage.id}`} surface="page" item={null}
                                                     onDismiss={() => useUIStore.getState().setOpenGuestPage(null)} /></ErrorBoundary>
@@ -251,7 +279,7 @@ export const MainLayout: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div data-page-scroll-lock="true">
+                            <div className="relative z-10" data-page-scroll-lock="true">
                                 <ErrorBoundary><ContextPanelRail /></ErrorBoundary>
                             </div>
                             <ErrorBoundary><GuestHosts /></ErrorBoundary>
